@@ -188,7 +188,7 @@ class trace_simt_core_cluster : public simt_core_cluster {
                           const memory_config *mem_config,
                           class shader_core_stats *stats,
                           class memory_stats_t *mstats,
-                          class gpgpu_new_stats *new_stat)
+                          class gpgpu_new_stats *new_stats)
       : simt_core_cluster(gpu, cluster_id, config, mem_config, stats, mstats, new_stats) {
     create_shader_core_ctx();
   }
