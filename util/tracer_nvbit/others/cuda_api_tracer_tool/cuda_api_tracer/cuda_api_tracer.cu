@@ -137,7 +137,6 @@ void nvbit_at_init() {
  * This call back is triggered bith at entry and at exit of each CUDA driver
  * call, is_exit=0 is entry, is_exit=1 is exit.
  * */
-// TODO: Balar runs on api calls, will this cause issues?
 void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                          const char *name, void *params, CUresult *pStatus) {
     /* Identify all the possible CUDA launch events */
@@ -145,7 +144,7 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
         // Check memalloc result after it finishes
         // Deref as the argument is passed by addr
         if (cbid == API_CUDA_cuMemAlloc || cbid == API_CUDA_cuMemAlloc_v2) {
-            // TODO Use address instead of value to keep reference?
+            // Identify a new device pointer, insert into our map
             cuMemAlloc_v2_params *p = (cuMemAlloc_v2_params *)params;
             uint64_t size = dptr_map->size();
 
@@ -161,7 +160,8 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
             || cbid == API_CUDA_cuMemcpyDtoHAsync_v2
             || cbid == API_CUDA_cuMemcpyDtoH_v2_ptds
             || cbid == API_CUDA_cuMemcpyDtoHAsync_v2_ptsz) {
-            // Move to here as we need to save the data for verification purpose
+            // Encounter a cudaMemcpyD2H event, will look for the device pointers used
+            // to dump the memcpy data
             cuMemcpyDtoH_v2_params *p = (cuMemcpyDtoH_v2_params *) params;
             CUdeviceptr dptr = p->srcDevice;
             char* name = dptr_map->find(dptr)->second;
@@ -212,55 +212,66 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
         // Currently parse the function signature instead, 
         // will have some compactibility issues
         void** tmp = (p->kernelParams);
+        // // Parse each argument type
+        // while (funcTypes.size() > 0) {
+        //     std::string type;
+        //     std::string delim(", ");
+        //     std::size_t firstSplit = funcTypes.find(delim);
+        //     if (firstSplit == std::string::npos) {
+        //         // Reach last argument
+        //         type = funcTypes;
+        //         funcTypes.clear();
+        //     } else {
+        //         type = funcTypes.substr(0, firstSplit);
+        //         funcTypes = funcTypes.substr(firstSplit + delim.length());
+        //     }
 
-        // Parse each argument type
-        while (funcTypes.size() > 0) {
-            std::string type;
-            std::string delim(", ");
-            std::size_t firstSplit = funcTypes.find(delim);
-            if (firstSplit == std::string::npos) {
-                // Reach last argument
-                type = funcTypes;
-                funcTypes.clear();
-            } else {
-                type = funcTypes.substr(0, firstSplit);
-                funcTypes = funcTypes.substr(firstSplit + delim.length());
-            }
+        //     // Parse on type and give type size
+        //     if (type.compare("double*") == 0) {
+        //         CUdeviceptr dptr = (CUdeviceptr) *(double **)(*tmp);
+        //         char* name = dptr_map->find(dptr)->second;
+        //         fprintf(traceFp, "%s/%d/", name, sizeof(double*));
+        //     } else if (type.compare("float*") == 0) {
+        //         CUdeviceptr dptr = (CUdeviceptr) *(float **)(*tmp);
+        //         char* name = dptr_map->find(dptr)->second;
+        //         fprintf(traceFp, "%s/%d/", name, sizeof(float*));
+        //     } else if (type.compare("int*") == 0) {
+        //         CUdeviceptr dptr = (CUdeviceptr) *(int **)(*tmp);
+        //         char* name = dptr_map->find(dptr)->second;
+        //         fprintf(traceFp, "%s/%d/", name, sizeof(int*));
+        //     } else if (type.compare("double") == 0) {
+        //         fprintf(traceFp, "%f/%d/", *(double *)(*tmp), sizeof(double));
+        //     } else if (type.compare("float") == 0) {
+        //         fprintf(traceFp, "%f/%d/", *(float *)(*tmp), sizeof(float));
+        //     } else if (type.compare("int") == 0) {
+        //         fprintf(traceFp, "%d/%d/", *(int *)(*tmp), sizeof(int));
+        //     } else {
+        //         // Waiting on NVBit to recognize argument types
+        //         // but you could add your own data types here to parse the
+        //         // function signature
+        //         assert(0 && "Waiting on NVBit 1.5.6 release to recognize argument sizes automatically");
+        //     }
 
-            // Parse on type and give type size
-            if (type.compare("double*") == 0) {
-                CUdeviceptr dptr = (CUdeviceptr) *(double **)(*tmp);
-                char* name = dptr_map->find(dptr)->second;
-                fprintf(traceFp, "%s/%d/", name, sizeof(double*));
-            } else if (type.compare("float*") == 0) {
-                CUdeviceptr dptr = (CUdeviceptr) *(float **)(*tmp);
-                char* name = dptr_map->find(dptr)->second;
-                fprintf(traceFp, "%s/%d/", name, sizeof(float*));
-            } else if (type.compare("int*") == 0) {
-                CUdeviceptr dptr = (CUdeviceptr) *(int **)(*tmp);
-                char* name = dptr_map->find(dptr)->second;
-                fprintf(traceFp, "%s/%d/", name, sizeof(int*));
-            } else if (type.compare("double") == 0) {
-                fprintf(traceFp, "%f/%d/", *(double *)(*tmp), sizeof(double));
-            } else if (type.compare("float") == 0) {
-                fprintf(traceFp, "%f/%d/", *(float *)(*tmp), sizeof(float));
-            } else if (type.compare("int") == 0) {
-                fprintf(traceFp, "%d/%d/", *(int *)(*tmp), sizeof(int));
-            } else {
-                // Waiting on NVBit to recognize argument types
-                // but you could add your own data types here to parse the
-                // function signature
-                assert(0 && "Waiting on NVBit 1.5.6 release to recognize argument sizes automatically");
-            }
-
-            // Increment the argument pointer
-            tmp++;
-        }
+        //     // Increment the argument pointer
+        //     tmp++;
+        // }
 
 
         // TODO: Cannot use this until next issue
         // TODO: See: https://github.com/NVlabs/NVBit/issues/80
-        /**
+        // TODO Use cuKernelGetParamInfo to query parameter info if this wont work
+        // TODO For larger than 8 bytes data, will need to use a memory dump?
+        // Description
+        // Invokes the function CUfunction or the kernel CUkernelf on a gridDimX x gridDimY x gridDimZ grid of blocks. Each block contains blockDimX x blockDimY x blockDimZ threads.
+        
+        // sharedMemBytes sets the amount of dynamic shared memory that will be available to each thread block.
+        
+        // TODO Kernel parameters to f can be specified in one of two ways:
+        
+        // 1) Kernel parameters can be specified via kernelParams. If f has N parameters, then kernelParams needs to be an array of N pointers. Each of kernelParams[0] through kernelParams[N-1] must point to a region of memory from which the actual kernel parameter will be copied. The number of kernel parameters and their offsets and sizes do not need to be specified as that information is retrieved directly from the kernel's image.
+        
+        // 2) Kernel parameters can also be packaged by the application into a single buffer that is passed in via the extra parameter. This places the burden on the application of knowing each kernel parameter's size and alignment/padding within the buffer. Here is an example of using the extra parameter in this manner:
+
         std::vector<int> sizes = nvbit_get_kernel_argument_sizes(p->f);
         void** tmp = (p->kernelParams);
 
@@ -278,7 +289,7 @@ void nvbit_at_cuda_event(CUcontext ctx, int is_exit, nvbit_api_cuda_t cbid,
                 printf("Unknown type, ");
             }
             tmp++;
-        }*/
+        }
 
         // // TODO: Hard coded for testing
         // printf("%p, ", *((double **)(*tmp)));
