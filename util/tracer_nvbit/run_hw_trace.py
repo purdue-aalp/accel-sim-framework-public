@@ -60,7 +60,7 @@ common.load_defined_yamls()
 
 benchmarks = []
 benchmarks = common.gen_apps_from_suite_list(options.benchmark_list.split(","))
-
+print(benchmarks)
 cuda_version = common.get_cuda_version(this_directory)
 now_time = datetime.datetime.now()
 day_string = now_time.strftime("%y.%m.%d-%A")
@@ -70,7 +70,7 @@ logfile = day_string + "--" + time_string + ".csv"
 nvbit_tracer_path = os.path.join(this_directory, "tracer_tool")
 
 for bench in benchmarks:
-    edir, ddir, exe, argslist = bench
+    edir, ddir, docker_builder, exe, argslist = bench
     for argpair in argslist:
         args = argpair["args"]
         run_name = os.path.join(exe, common.get_argfoldername(args))
@@ -118,16 +118,14 @@ for bench in benchmarks:
 
         if options.terminate_upon_limit:
             sh_contents += "export TERMINATE_UPON_LIMIT=1; "
-
-        if "mlperf" in exec_path:
+        print(argpair)
+        range = argpair.get("sample","")
+        print(range)
+        if range != "":
             # For mlperf by default we turn this flag on
             sh_contents += "export TERMINATE_UPON_LIMIT=0; "
             exec_path = ". " + exec_path
-
-            if options.kernel_number > 0:
-                sh_contents +=  ('\nexport DYNAMIC_KERNEL_RANGE="0-'+str(options.kernel_number)+'"\n')
-            else:
-                sh_contents +=  ('\nexport DYNAMIC_KERNEL_RANGE="0-'+str(50)+'"\n')
+            sh_contents +=  ('\nexport DYNAMIC_KERNEL_RANGE='+str(range)+'\n')
         else:
             if options.kernel_number > 0:
                 sh_contents +=  ('\nexport DYNAMIC_KERNEL_RANGE="0-'+str(options.kernel_number)+'"\n')

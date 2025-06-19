@@ -120,10 +120,12 @@ def parse_app_definition_yaml(def_yml, apps):
                     )
                 )
                 count += 1
+            docker_builder = benchmark_yaml[suite].get("docker_builder", "")
             apps[suite].append(
                 (
                     benchmark_yaml[suite]["exec_dir"],
                     benchmark_yaml[suite]["data_dirs"],
+                    docker_builder,
                     exe_name,
                     args_list,
                 )

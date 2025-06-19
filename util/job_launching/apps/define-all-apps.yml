@@ -794,10 +794,12 @@ lonestargpu-2.0:
 mlperf_inference:
     exec_dir: "$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/"
     data_dirs: ""
+    docker_builder: "$GPUAPPS_ROOT/bin/$CUDA_VERSION/release/mlperf_inference/docker.sh"
     execs:
         - inference_mlperf_bert_test.sh:
             - args:
               accel-sim-mem: 60G
+              sample: 0-24
 
 
 mlperf_training:
