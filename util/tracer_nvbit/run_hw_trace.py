@@ -133,12 +133,11 @@ def generate_inner_run_script(
     lines += [
         f'export CUDA_VERSION="{cuda_version}"',
         f'export CUDA_VISIBLE_DEVICES="{device_num}"',
-        'export TRACES_FOLDER="/workspace/traces"',
-        'rm -f ${TRACES_FOLDER}/*',
+        'rm -f traces/*',
         f'chmod +x {exec_inside_container_path}',
-        f'CUDA_INJECTION64_PATH=/workspace/util/tracer_nvbit/tracer_tool/tracer_tool.so \\',
-        f'LD_PRELOAD=/workspace/util/tracer_nvbit/tracer_tool/tracer_tool.so {exec_inside_container_path} {args}',
-        f'/workspace/util/tracer_nvbit/tracer_tool/traces-processing/post-traces-processing /workspace/traces',
+        f'CUDA_INJECTION64_PATH=/workspace/accel-sim-framework/util/tracer_nvbit/tracer_tool/tracer_tool.so \\',
+        f'LD_PRELOAD=/workspace/accel-sim-framework/util/tracer_nvbit/tracer_tool/tracer_tool.so {exec_inside_container_path} {args}',
+        f'/workspace/accel-sim-framework/util/tracer_nvbit/tracer_tool/traces-processing/post-traces-processing /workspace/traces',
         'rm -f /workspace/traces/*.trace /workspace/traces/kernelslist'
     ]
 
@@ -167,12 +166,11 @@ def generate_run_in_container_script(
         'echo "Started container with ID: $CONTAINER_ID"',
         "",
         "# Clone tracer repo and build tracer inside container",
-        f'docker exec $CONTAINER_ID git clone {tracer_git_url} /workspace || echo "Tracer repo already exists"',
-        'docker exec $CONTAINER_ID bash -c "cd /workspace/util/tracer_nvbit && ./install_nvbit.sh && make -j"',
+        f'docker exec $CONTAINER_ID bash -c "cd /workspace git clone {tracer_git_url}  || echo "Tracer repo already exists""',
+        'docker exec $CONTAINER_ID bash -c "cd /workspace/accel-sim-framework/util/tracer_nvbit && ./install_nvbit.sh && make -j"',
 
         "# Copy executable and run script into container",
         f'docker cp {exec_path} $CONTAINER_ID:/workspace/my_app',
-        f'docker cp {os.path.join(run_dir, script_inside_container_name)} $CONTAINER_ID:/workspace/{script_inside_container_name}',
         "",
         "# Run tracing inside container",
         f'docker exec $CONTAINER_ID bash /workspace/{script_inside_container_name}',
