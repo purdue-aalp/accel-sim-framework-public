@@ -64,6 +64,7 @@ const trace_warp_inst_t *trace_shd_warp_t::get_next_trace_inst() {
     new_inst->parse_from_trace_struct(
         warp_traces[trace_pc], m_kernel_info->OpcodeMap,
         m_kernel_info->m_tconfig, m_kernel_info->m_kernel_trace_info);
+        this->m_kernel_info->set_opcode_map(warp_traces[trace_pc].m_pc,warp_traces[trace_pc].opcode);
     trace_pc++;
     return new_inst;
   } else
@@ -666,3 +667,10 @@ void trace_shader_core_ctx::issue_warp(register_set &warp,
   // after issue
   delete pI;
 }
+
+  std::string trace_function_info::get_insn_str(unsigned pc) const{
+
+    std::stringstream ss;
+    ss << "PC: 0x" << std::hex << pc << ", Opcode: " << m_trace_kernel_info->get_opcode_map(pc);
+    return ss.str();
+  }

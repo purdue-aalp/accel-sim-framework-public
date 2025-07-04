@@ -22,7 +22,7 @@
 // number of SASS HMMA per 16x16 PTX WMMA for FP16 - FP32 accumlate operation
 // see slide 22 at
 // https://developer.download.nvidia.com/video/gputechconf/gtc/2020/presentations/s21730-inside-the-nvidia-ampere-architecture.pdf
-#define SASS_hmma_per_PTX_wmma 2
+#define SASS_hmma_per_PTX_wmma 1
 
 // These vars are almost constant between HW generation
 // see slide 24 from Nvidia at

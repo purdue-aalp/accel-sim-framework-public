@@ -182,10 +182,12 @@ trace_kernel_info_t *accel_sim_framework::create_kernel_info(kernel_trace_t *ker
                 kernel_trace_info->tb_dim_z);
   trace_function_info *function_info =
       new trace_function_info(info, m_gpgpu_context);
+      
+      
   function_info->set_name(kernel_trace_info->kernel_name.c_str());
   trace_kernel_info_t *kernel_info = new trace_kernel_info_t(
       gridDim, blockDim, function_info, parser, config, kernel_trace_info);
-
+  function_info->m_trace_kernel_info =kernel_info;
   return kernel_info;
 }
 

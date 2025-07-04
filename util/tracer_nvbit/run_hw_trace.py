@@ -143,6 +143,7 @@ for bench in benchmarks:
             + '"; export CUDA_VISIBLE_DEVICES="'
             + options.device_num
             + '" ; '
+            + ' export TRACE_FILE_COMPRESS=0'
             + "\nrm -f traces/*"
             + "\nexport TRACES_FOLDER="
             + this_run_dir

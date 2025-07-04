@@ -42,6 +42,7 @@
 #include "abstract_hardware_model.h"
 #include "gpgpu-sim/shader.h"
 
+
 class trace_function_info : public function_info {
  public:
   trace_function_info(const struct gpgpu_ptx_sim_info &info,
@@ -58,7 +59,9 @@ class trace_function_info : public function_info {
     m_kernel_info = info;
   }
 
+  virtual std::string get_insn_str(unsigned pc) const;
   virtual ~trace_function_info() {}
+  class trace_kernel_info_t *m_trace_kernel_info;
 };
 
 class trace_warp_inst_t : public warp_inst_t {
@@ -102,10 +105,22 @@ class trace_kernel_info_t : public kernel_info_t {
   bool was_launched() { return m_was_launched; }
 
   void set_launched() { m_was_launched = true; }
+  void set_opcode_map(address_type pc, const std::string& opcode) {
+        m_pc_opcode_map[pc] = opcode;
+    }
+  std::string get_opcode_map(address_type pc) const {
+        auto it = m_pc_opcode_map.find(pc);
+        if (it != m_pc_opcode_map.end()) {
+            return it->second;
+        }
+        return ""; 
+    }
 
+  
  private:
   trace_config *m_tconfig;
   const std::unordered_map<std::string, OpcodeChar> *OpcodeMap;
+  std::unordered_map<address_type, std::string> m_pc_opcode_map;
   trace_parser *m_parser;
   kernel_trace_t *m_kernel_trace_info;
   bool m_was_launched;
