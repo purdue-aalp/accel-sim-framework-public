@@ -71,8 +71,8 @@ jobs:
   SASS-Weekly:
     timeout-minutes: 720
     needs: [Tracer-Weekly]
-    if: ${{ github.repository == 'accel-sim/accel-sim-framework' || github.event_name == 'workflow_dispatch' }}
-    runs-on: tgrogers-raid 
+    if: ${{ !cancelled() && (github.repository == 'accel-sim/accel-sim-framework' || github.event_name == 'workflow_dispatch') }}
+    runs-on: tgrogers-raid
     defaults:
       run:
         shell: bash
