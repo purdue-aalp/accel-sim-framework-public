@@ -272,8 +272,10 @@ jobs:
             | grep -v '^$' > issue-labels.txt || true
 
           if grep -qE "$HEAD_RE" opencode.clean; then
+            # Everything from the LABELS line on is dropped, not just that line:
+            # the model sometimes signs off after it, and that would be posted.
             awk -v re="$HEAD_RE" '$0 ~ re {f=1} f' opencode.clean \
-              | sed -E '/^[[:space:]]*LABELS:/d' > issue-triage.md
+              | sed -E '/^[[:space:]]*LABELS:/,$d' > issue-triage.md
           else
             sed -E '/^[[:space:]]*LABELS:/d' opencode.clean | tail -n 120 > issue-triage.md
           fi
