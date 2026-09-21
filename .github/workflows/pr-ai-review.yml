@@ -49,6 +49,12 @@ jobs:
             "https://api.github.com/repos/$REPO/pulls/$PR_NUMBER" > pr.diff
           echo "Diff size: $(wc -l < pr.diff) lines"
 
+      - name: Ensure the LLM server is up
+        continue-on-error: true
+        env:
+          AALP_CI_DIR: ${{ vars.AALP_CI_DIR }}
+        run: ./.github/scripts/ensure-llm-server.sh
+
       - name: AI review with opencode
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}

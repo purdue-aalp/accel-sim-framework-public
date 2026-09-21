@@ -72,6 +72,13 @@ jobs:
       - name: Correlate Ubench
         run: ./.github/scripts/main-sass.sh correlate
 
+      - name: Ensure the LLM server is up
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          AALP_CI_DIR: ${{ vars.AALP_CI_DIR }}
+        run: ./.github/scripts/ensure-llm-server.sh
+
       - name: Analyze success with opencode
         if: success()
         env:
