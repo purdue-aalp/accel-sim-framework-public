@@ -37,13 +37,18 @@ Main NVBit tool that instruments CUDA binaries:
 **Environment Variables:**
 | Variable | Description |
 |----------|-------------|
-| `DYNAMIC_KERNEL_LIMIT_START` | First kernel ID to trace |
-| `DYNAMIC_KERNEL_LIMIT_END` | Last kernel ID to trace |
-| `DYNAMIC_KERNEL_RANGE` | Complex range spec (e.g., `1-5,10-*,kernel_name:regex`) |
-| `TRACES_FOLDER` | Output directory for traces |
-| `ENABLE_COMPRESS` | Enable address compression (default: 1) |
-| `LINEINFO` | Include source line info (default: 0) |
-| `ALLOW_REG_VAL_TRACING` | Trace register values (version 6) |
+| `DYNAMIC_KERNEL_RANGE` | Space-separated IDs/ranges, optional `@regex` list: `"2 5-8 10-"`, `"5-8@kernel_a.*,kernel_b.*"`; unset = all |
+| `ACTIVE_FROM_START` | 1; 0 waits for cuProfilerStart/Stop and ignores the range |
+| `TERMINATE_UPON_LIMIT` | 0; exit once past the last kernel in the range |
+| `TRACES_FOLDER` + `USER_DEFINED_FOLDERS=1` | Output directory for traces |
+| `TOOL_COMPRESS` | 1; address compression (base_stride, falling back to base_delta) |
+| `TRACE_FILE_COMPRESS` | 1; xz-compress the raw trace file |
+| `TRACE_LINEINFO` | 0; source line info (binary needs `-lineinfo`) |
+| `ALLOW_REG_VAL_TRACING` | 1; trace register values (trace version 6) |
+| `SPINLOCK_HANDLING_MODE` | 0 none, 1 fast_forward, 2 mark_region (`run_hw_trace.py` defaults to mark_region) |
+| `ENABLE_WATCHDOG`, `SKIP_TMA_MEM`, `EXCLUDE_PRED_OFF` | 1, 0, 1 |
+
+The authoritative list with defaults is the `GET_VAR_*` block in `nvbit_at_init()`.
 
 **Global State:**
 ```cpp

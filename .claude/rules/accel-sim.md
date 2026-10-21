@@ -13,7 +13,7 @@ This file provides guidance for working with code in this repository.
 This repository contains **two separate git repositories**:
 
 1. **Accel-Sim Framework** (root directory): The main framework for GPU simulation and validation
-2. **GPGPU-Sim** (nested at `gpu-simulator/gpgpu-sim/`): A submodule that provides the core performance model
+2. **GPGPU-Sim** (nested at `gpu-simulator/gpgpu-sim/`): a separate clone, gitignored by the root repo (not a submodule), that provides the core performance model
 
 When making changes or commits, be aware of which repository you are working in. The `gpu-simulator/gpgpu-sim/` directory has its own `.git` and should be treated as a separate project.
 

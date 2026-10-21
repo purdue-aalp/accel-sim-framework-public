@@ -16,7 +16,7 @@ GPGPU-Sim uses a statistics framework in `gpu-simulator/gpgpu-sim/src/statistics
 Available in `Statistics::` namespace:
 - `UInt64SingleStatsCounter` - Single global counter
 - `UInt64MultiUnitStatsCounter` - Per-unit counters (e.g., per sub-partition, per SM)
-- `Float32SingleStatsCounter` / `Float32MultiUnitStatsCounter` - Float versions
+- `FloatSingleStatsCounter` / `FloatMultiUnitStatsCounter` - Float versions
 
 ## Implementation Steps
 
